@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'question.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'auth_screen.dart';
+import 'home_page.dart';
 import 'quiz_screen.dart';
 
 void main() {
@@ -14,59 +16,29 @@ class QuizApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(),
+      home: FutureBuilder(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            final prefs = snapshot.data as SharedPreferences;
+            final userData = prefs.getString('user');
+            if (userData != null) {
+              return HomePage();
+            } else {
+              return AuthScreen();
+            }
+          }
+          return CircularProgressIndicator();
+        },
+      ),
+      routes: {
+        '/auth': (context) => AuthScreen(),
+        '/home': (context) => HomePage(),
+        '/quiz': (context) {
+          final userId = ModalRoute.of(context)!.settings.arguments as int;
+          return QuizScreen(userId: userId);
+        },
+      },
     );
   }
 }
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Quiz App'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Welcome to the Quiz App!',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('Start Quiz'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => QuizScreen(questions: questions),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-final List<Question> questions = [
-  Question(
-    questionText: "What is the capital of France?",
-    options: ["London", "Berlin", "Paris", "Madrid"],
-    correctAnswerIndex: 2,
-  ),
-  Question(
-    questionText: "Which planet is known as the Red Planet?",
-    options: ["Mars", "Jupiter", "Venus", "Saturn"],
-    correctAnswerIndex: 0,
-  ),
-  Question(
-    questionText: "What is the largest mammal in the world?",
-    options: ["Elephant", "Blue Whale", "Giraffe", "Hippopotamus"],
-    correctAnswerIndex: 1,
-  ),
-];
