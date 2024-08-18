@@ -51,14 +51,7 @@ class HomePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 UserInfoContainer(
-                  user: user,
-                  onStartQuiz: () {
-                    Navigator.pushNamed(
-                      context,
-                      '/quiz',
-                      arguments: user.id,
-                    );
-                  },
+                  user: user
                 ),
                 LeaderboardContainer(currentUser: user),
               ],

@@ -56,9 +56,13 @@ class _QuizScreenState extends State<QuizScreen> {
             },
             body: jsonEncode({'user_id': widget.userId, 'game_id': _gameId}),
           );
-          print(res.body);
+          if(res.statusCode == 200){
+            print("User game created");
+          }else{
+            throw Exception('Failed to start quiz '+res.body);
+          }
         }catch(e){
-          throw Exception('Failed to start quiz '+ e.toString());
+          return {};
         }
         return data;
       } else {
@@ -71,20 +75,63 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _submitAnswer(int selectedIndex) async {
-    final question = _questions[_currentQuestionIndex];
+   final question = _questions[_currentQuestionIndex];
     final isCorrect = selectedIndex == question.correctAnswerIndex;
+    if (isCorrect) {
+      _score += 2; // Assume each question is worth 2 points for level 1
+      _correctAnswers++;
+    }
+
+    // Show explanation dialog
+    await _showExplanationDialog(isCorrect, question.explanation);
+
     setState(() {
-      _isAnswerCorrect = isCorrect;
-      if (isCorrect) {
-        _score += 2; // Assume each question is worth 2 points for level 1
-        _correctAnswers++;
-      }
       _currentQuestionIndex++;
     });
 
     if (_currentQuestionIndex >= _questions.length) {
       await _endGame();
     }
+  }
+
+  Future<void> _showExplanationDialog(bool isCorrect, String explanation) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            isCorrect ? 'Correct!' : 'Incorrect',
+            style: TextStyle(
+              color: isCorrect ? Colors.green : Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Explanation:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text(explanation),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Okay'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _endGame() async {
@@ -116,69 +163,89 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Quiz'),
-      ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _quizFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          }
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Quiz', style: TextStyle(color: Colors.black)),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      iconTheme: IconThemeData(color: Colors.black),
+    ),
+    body: FutureBuilder<Map<String, dynamic>>(
+      future: _quizFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
 
-          if (_questions.isEmpty) {
-            return Center(child: Text('No questions available'));
-          }
+        if (_questions.isEmpty) {
+          return Center(child: Text('No questions available'));
+        }
 
-          if (_currentQuestionIndex >= _questions.length) {
-            return Center(child: Text('Quiz finished'));
-          }
+        if (_currentQuestionIndex >= _questions.length) {
+          return Center(child: Text('Quiz finished'));
+        }
 
-          final question = _questions[_currentQuestionIndex];
+        final question = _questions[_currentQuestionIndex];
 
-          return Column(
+        return Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Text(
-                  question.text,
-                  style: TextStyle(fontSize: 24),
+              Text(
+                'Question ${_currentQuestionIndex + 1} of ${_questions.length}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                    question.text,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
+              SizedBox(height: 20),
               ...question.options.asMap().entries.map((entry) {
                 final index = entry.key;
                 final option = entry.value;
-                return ListTile(
-                  title: Text(option),
-                  onTap: () => _submitAnswer(index),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6.0),
+                  child: ElevatedButton(
+                    child: Text(
+                      option,
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade100,
+                      foregroundColor: Colors.black,
+                      padding: EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () => _submitAnswer(index),
+                  ),
                 );
               }).toList(),
-              if (_isAnswerCorrect)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Correct!',
-                    style: TextStyle(color: Colors.green, fontSize: 20),
-                  ),
-                )
-              else if (_currentQuestionIndex > 0)
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Incorrect!',
-                    style: TextStyle(color: Colors.red, fontSize: 20),
-                  ),
-                ),
             ],
-          );
-        },
-      ),
-    );
-  }
+          ),
+        );
+      },
+    ),
+  );
+}
 }

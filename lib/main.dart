@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'auth_screen.dart';
 import 'home_page.dart';
 import 'quiz_screen.dart';
+import 'history_container.dart';
 
 void main() {
   runApp(QuizApp());
@@ -37,6 +38,10 @@ class QuizApp extends StatelessWidget {
         '/quiz': (context) {
           final userId = ModalRoute.of(context)!.settings.arguments as int;
           return QuizScreen(userId: userId);
+        },
+        '/history': (context) {
+          final userId = ModalRoute.of(context)!.settings.arguments as int;
+          return HistoryPage(userId: userId);
         },
       },
     );

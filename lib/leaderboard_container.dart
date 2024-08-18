@@ -99,11 +99,10 @@ class _LeaderboardContainerState extends State<LeaderboardContainer> {
                 );
               }),
               SizedBox(height: 20),
-              if (users.isNotEmpty && currentUserRank >= 6)
-                Text(
-                  'You are ranked #$currentUserRank',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+              Text(
+                'You are ranked #$currentUserRank',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         );
