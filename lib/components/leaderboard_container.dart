@@ -1,6 +1,6 @@
 // lib/leaderboard_container.dart
 import 'package:flutter/material.dart';
-import 'auth_screen.dart';
+import '../pages/auth_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -57,7 +57,8 @@ class _LeaderboardContainerState extends State<LeaderboardContainer> {
         }
 
         users = snapshot.data ?? [];
-        users.sort((a, b) => b.points.compareTo(a.points)); // Sort users by points
+        users.sort(
+            (a, b) => b.points.compareTo(a.points)); // Sort users by points
 
         int currentUserRank = 0;
         for (int i = 0; i < users.length; i++) {
@@ -71,11 +72,11 @@ class _LeaderboardContainerState extends State<LeaderboardContainer> {
           padding: EdgeInsets.all(16),
           margin: EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: const Color.fromARGB(255, 19, 26, 38),
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
+                color: const Color.fromARGB(255, 20, 25, 37).withOpacity(0.5),
                 spreadRadius: 3,
                 blurRadius: 5,
                 offset: Offset(0, 3),
@@ -85,23 +86,61 @@ class _LeaderboardContainerState extends State<LeaderboardContainer> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Leaderboard',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              Row(
+              children: [
+                Container(
+                  color: Colors.transparent, // Background color of the container
+                  child: Icon(
+                    Icons.leaderboard,
+                    color: const Color.fromARGB(255, 254, 196, 37), // Color of the icon
+                  ),
+                ),
+                SizedBox(width: 10),
+                Text(
+                  'Leaderboard',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color.fromARGB(255, 255, 255, 255)),
+                ),
+              ],
               ),
               SizedBox(height: 10),
               ...List.generate(5, (index) {
                 if (index >= users.length) return SizedBox.shrink();
                 final user = users[index];
                 return ListTile(
-                  title: Text('${index + 1}. ${user.name}'),
-                  trailing: Text('${user.points} points'),
+                  title: Text(
+                    '${index + 1}. ${user.name}',
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white), // Apply the text style here
+                  ),
+                  trailing: Text(
+                    '${user.points} points',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color:
+                            Colors.white), // Apply the text style here as well
+                  ),
                 );
               }),
               SizedBox(height: 20),
-              Text(
-                'You are ranked #$currentUserRank',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Icon(
+                    Icons.emoji_events,
+                    color: const Color.fromARGB(255, 254, 196, 37),
+                  ),
+                  SizedBox(width: 10),
+                  Text(
+                  'You are ranked #$currentUserRank',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+              ],
               ),
             ],
           ),

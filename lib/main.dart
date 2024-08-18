@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'auth_screen.dart';
-import 'home_page.dart';
-import 'quiz_screen.dart';
-import 'history_container.dart';
+import 'pages/auth_screen.dart';
+import 'pages/home_page.dart';
+import 'pages/quiz_screen.dart';
+import 'pages/history_container.dart';
 
 void main() {
   runApp(QuizApp());
@@ -17,6 +17,7 @@ class QuizApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      debugShowCheckedModeBanner: false,
       home: FutureBuilder(
         future: SharedPreferences.getInstance(),
         builder: (context, snapshot) {
